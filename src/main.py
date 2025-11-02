@@ -1,36 +1,32 @@
 # src/main.py
 import numpy as np
-from decision_tree.decision_tree import DecisionTreeClassifier
-
+from xgboost.mini_xgboost import MiniXGBoost
 
 def load_data():
-    """Generate or load sample data."""
     X = np.array([
-        [2.7, 2.5],
-        [1.3, 3.0],
-        [3.1, 1.2],
-        [0.8, 1.5],
-        [3.0, 3.5]
+        [1.0],
+        [2.0],
+        [3.0],
+        [4.0],
+        [5.0]
     ])
-    y = np.array([0, 0, 1, 0, 1])
+    y = np.array([1.0, 0.0, 1.0, 0.0, 0.0])
     return X, y
 
-
-def train_tree():
-    """Train and evaluate the decision tree."""
-    X, y = load_data()
-
-    tree = DecisionTreeClassifier(max_depth=3)
-    tree.fit(X, y)
-
-    print("Tree trained successfully.")
-    print("Predictions:", tree.predict(X))
-
-
+print(load_data())
 def main():
-    """Main entry point."""
-    train_tree()
+    X, y = load_data()
+    model = MiniXGBoost(n_estimators=3, learning_rate=0.2, max_depth=2)
+    model.fit(X, y)
+    preds = model.predict(X)
+    print("Final predictions:", preds)
 
 
 if __name__ == "__main__":
     main()
+
+X, y = load_data()
+model = MiniXGBoost(n_estimators=3, learning_rate=0.2, max_depth=2)
+model.fit(X, y)
+preds = model.predict(X)
+
