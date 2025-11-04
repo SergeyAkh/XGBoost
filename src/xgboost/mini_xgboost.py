@@ -1,8 +1,6 @@
 import numpy as np
 from decision_tree.decision_tree import DecisionTreeRegressor
 
-
-
 class MiniXGBoost:
     def __init__(self, n_estimators=5, learning_rate=0.1, max_depth=3):
         self.n_estimators = n_estimators
