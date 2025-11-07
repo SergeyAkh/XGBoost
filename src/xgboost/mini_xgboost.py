@@ -14,7 +14,7 @@ class MiniXGBoost:
 
         for i in range(self.n_estimators):
             residuals = y - y_pred
-            print(residuals)
+            # print(residuals)
 
             tree = DecisionTreeRegressor(max_depth=self.max_depth)
             tree.fit(X, residuals)
