@@ -1,1 +1,1 @@
-from .mini_xgboost import MiniXGBoost
+from xgboost.mini_xgboost import MiniXGBoost

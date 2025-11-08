@@ -57,16 +57,12 @@ class DecisionTreeRegressor:
         if not isinstance(tree, tuple):
             return tree
         feat, thresh, left, right = tree
-        try:
-            if x[feat] < thresh:
-                return self._predict_one(x, left)
-            else:
-                return self._predict_one(x, right)
-        except:
-            print(x[feat].head)
-            print(tree)
+        print(tree)
 
-
+        if x[feat] < thresh:
+            return self._predict_one(x, left)
+        else:
+            return self._predict_one(x, right)
 
     def predict(self, X):
         return np.array([self._predict_one(x, self.tree_) for x in X])
