@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from xgboost import XGBClassifier
-from sklearn.metrics import accuracy_score, roc_auc_score, classification_report, confusion_matrix, auc, roc_curve
+from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, recall_score, confusion_matrix, auc, roc_curve, f1_score
 
 
 def load_data():
@@ -16,23 +16,50 @@ def load_data():
 
     return df, X, y
 
-import importlib
-
-importlib.reload(MiniXGBoost)
 df, X, y = load_data()
 
 X = X[["ChestPainType","MaxHR", "ExerciseAngina", "ST_Slope", "Oldpeak"]]
 
-model = MiniXGBoost(n_estimators=100, learning_rate=0.1, max_depth=2, task="classification")
+model = MiniXGBoost(n_estimators=200, learning_rate=0.1, max_depth=5, task="classification")
 
-model.fit(X.values, y.values)
-probs = model.predict(X.values, as_proba=True)
-labels = model.predict(X.values, as_proba=False)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
-print("Accuracy:", accuracy_score(y, labels))
-print("ROC-AUC:", roc_auc_score(y, probs))
+model.fit(X_train.values, y_train.values)
+y_test_probs = model.predict(X_test.values, as_proba=True)
+y_test_labels = model.predict(X_test.values, as_proba=False)
+
+print("Accuracy:", accuracy_score(y_test, y_test_labels))
+print("ROC-AUC:", roc_auc_score(y_test, y_test_probs))
+
+thresholds = np.linspace(0, 1, 100)
+accuracies = [accuracy_score(y_test, y_test_probs >= t) for t in thresholds]
+precisions = [precision_score(y_test, y_test_probs >= t, zero_division=0) for t in thresholds]
+recalls = [recall_score(y_test, y_test_probs >= t) for t in thresholds]
+
+best_t = thresholds[np.argmax(accuracies)]
+best_acc = np.max(accuracies)
+f1 = f1_score(y_test, y_test_probs >= best_t)
+print("Best threshold:", best_t)
+print("Best accuracy:", best_acc)
+print("F1 score:", f1)
+
+# 5️⃣ Plot results
+plt.figure(figsize=(8,5))
+plt.plot(thresholds, accuracies, label='Accuracy', lw=2)
+plt.plot(thresholds, precisions, label='Precision', linestyle='--')
+plt.plot(thresholds, recalls, label='Recall', linestyle=':')
+plt.axvline(best_t, color='r', linestyle='--', label=f'Best Threshold = {best_t:.2f}')
+plt.xlabel("Threshold")
+plt.ylabel("Score")
+plt.title("Metrics vs. Decision Threshold")
+plt.legend()
+plt.grid(alpha=0.3)
+plt.show()
 
 
+target_names = ["normal", "abnormal"]
 def plot_confusion_matrix(Y_true, Y_pred):
     cm = confusion_matrix(Y_true, Y_pred)
 
@@ -46,7 +73,7 @@ def plot_confusion_matrix(Y_true, Y_pred):
     plt.show()
 
 def plot_roc_auc_curve(y_true, y_prob):
-    fpr, tpr, thresholds = roc_curve(y_true, y_prob[:,1])
+    fpr, tpr, thresholds = roc_curve(y_true, y_prob)
     roc_auc = auc(fpr, tpr)
     plt.figure()
     plt.plot(fpr, tpr, color='blue', lw=2, label='ROC curve (AUC = %0.2f)' % roc_auc)
@@ -57,41 +84,8 @@ def plot_roc_auc_curve(y_true, y_prob):
     plt.legend(loc='lower right')
     plt.show()
 
-plot_confusion_matrix(y, labels)
-# #########################
+plot_confusion_matrix(y_test, y_test_labels)
 
-
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
-)
-
-
-model_sci = XGBClassifier(
-    n_estimators=150,
-    learning_rate=0.15,
-    max_depth=2,
-    subsample=0.8,
-    colsample_bytree=0.8,
-    eval_metric="logloss"
-)
-
-model_sci.fit(X_train, y_train)
-
-# --- Predict and evaluate ---
-y_pred = model_sci.predict(X_test)
-y_proba = model_sci.predict_proba(X_test)[:, 1]
-
-print("Accuracy:", accuracy_score(y_test, y_pred))
-print("ROC-AUC:", roc_auc_score(y_test, y_proba))
-print("\nClassification Report:")
-print(classification_report(y_test, y_pred))
-
-##########################
-
-
-
-print(X.head())
 
 def main():
     df, X, y = load_data()
