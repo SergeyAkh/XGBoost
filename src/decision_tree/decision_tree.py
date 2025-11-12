@@ -1,22 +1,18 @@
 import numpy as np
 
 class DecisionTreeRegressor:
-    """Simple regression tree using variance (MSE) as split criterion."""
     def __init__(self, max_depth=3):
         self.max_depth = max_depth
         self.tree_ = None
 
-    # --- impurity (variance) ---
     def _variance(self, y):
         return np.var(y)
 
-    # --- split ---
     def _split(self, X, y, feature_index, threshold):
         left_mask = X[:, feature_index] < threshold
         right_mask = ~left_mask
         return X[left_mask], y[left_mask], X[right_mask], y[right_mask]
 
-    # --- best split ---
     def _best_split(self, X, y):
         best_feat, best_thresh, best_var = None, None, float("inf")
         n_samples, n_features = X.shape
@@ -27,7 +23,6 @@ class DecisionTreeRegressor:
                 X_left, y_left, X_right, y_right = self._split(X, y, feat, t)
                 if len(y_left) == 0 or len(y_right) == 0:
                     continue
-                # Weighted average of variances
                 var = (len(y_left)*self._variance(y_left) + len(y_right)*self._variance(y_right)) / len(y)
                 if var < best_var:
                     best_feat, best_thresh, best_var = feat, t, var

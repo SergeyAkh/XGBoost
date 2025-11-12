@@ -10,12 +10,9 @@ class MiniXGBoost:
         self.task = task
 
     def _sigmoid(self, x):
-        """Numerically stable sigmoid"""
-        # x = np.clip(x, -500, 500)
         return 1 / (1 + np.exp(-x))
 
     def fit(self, X, y):
-        """Train boosting ensemble."""
         y_pred = np.zeros_like(y, dtype=float)
 
         for i in range(self.n_estimators):
@@ -33,7 +30,6 @@ class MiniXGBoost:
             self.trees.append(tree)
 
     def predict(self, X, as_proba=False):
-        """Sum predictions from all trees."""
         y_pred = np.zeros(X.shape[0])
         for tree in self.trees:
             y_pred += self.learning_rate * tree.predict(X)
